@@ -302,7 +302,10 @@ if __name__ == '__main__':
         login()
         spider.spider_kind()
     except Exception as e:
-        print('查询错误：', e)
+        if 'Unable to locate element' in str(e):
+            print('IP封禁或无此对象：', e)
+        else:
+            print('查询错误：', e)
     else:
         create_word_cloud(spider.movie_name)
         data_show(spider.movie_name)
