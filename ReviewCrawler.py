@@ -4,10 +4,12 @@ import random
 import time
 from urllib.parse import urlencode
 
+import PIL.Image
+import PIL.ImageDraw
+import PIL.ImageFont
 import jieba
 import numpy as np
 import requests
-from PIL import Image
 from lxml import etree
 from matplotlib import pyplot as plt
 from selenium import webdriver
@@ -170,7 +172,7 @@ class Spider:
         page = 0
         # 每次写入前清空文件
         path = os.getcwd()
-        fn = path + './Review/data.csv'
+        fn = path + './Review/' + review_name + '_data.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
             wr.writerow(['Review'])
@@ -246,13 +248,12 @@ class Spider:
                 print("信息输入不全或错误：", exception)
             print('*' * 50)
             self.spider_kind()
-        else:
-            print('输入正确，正在查询。')
 
 
 # 定义词汇分割
-def cut_word():
-    with open('./Review/data.csv', 'r', encoding='utf-8-sig') as file:
+def cut_word(movie_name):
+    file_path = r'./Review/' + movie_name + '_data.csv'
+    with open(file_path, 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
         comment_txt = file.read()
         # 使用jieba进行分割
@@ -263,10 +264,20 @@ def cut_word():
         return word_list_cut
 
 
+# 生成词云蒙版
+def create_word_cloud_mask(movie_name):
+    text = movie_name
+    im = PIL.Image.new("RGB", (len(text) * 400 + 50, 450), (255, 255, 255))
+    dr = PIL.ImageDraw.Draw(im)
+    font = PIL.ImageFont.truetype(os.path.join("fonts", "STXINGKA.TTF"), 400)
+    dr.text((25, 25), text, font=font, fill="#000000")
+    return im
+
+
 # 创建词云
 def create_word_cloud(movie_name):
     # 设置词云形状图片,numpy+PIL方式读取图片
-    wc_mask = np.array(Image.open('WordCloud.jpg'))
+    wc_mask = np.array(create_word_cloud_mask(movie_name))
     # 数据清洗词列表
     stop_words = {
         '就是',
@@ -291,7 +302,7 @@ def create_word_cloud(movie_name):
         random_state=42,
         font_path=WC_FONT_PATH)
     # 生成词云
-    wc.generate(cut_word())
+    wc.generate(cut_word(movie_name))
     # 在只设置mask的情况下,你将会得到一个拥有图片形状的词云
     # 开始画图
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
@@ -308,7 +319,8 @@ def create_word_cloud(movie_name):
 
 # 生成情感分析
 def sentiment_show(movie_name):
-    f = open('result.txt', 'r', encoding='UTF-8')
+    file_path = r'./Review/' + movie_name + '_data.csv'
+    f = open(file_path, 'r', encoding='UTF-8')
     review_list = f.readlines()
     sentiments_list = []
     for i in review_list:
@@ -319,7 +331,7 @@ def sentiment_show(movie_name):
     plt.hist(sentiments_list, bins=10, facecolor='g')
     plt.xlabel('情感概率')
     plt.ylabel('数量')
-    plt.title('情感分析')
+    plt.title('情感分析-' + movie_name)
     img = './Review/情感分析-' + movie_name + '.png'
     fig = plt.gcf()
     plt.show()
@@ -330,7 +342,7 @@ def sentiment_show(movie_name):
 if __name__ == '__main__':
     spider = Spider()
     try:
-        login()
+        # login()
         spider.spider_kind()
     except Exception as e:
         if 'Unable to locate element' in str(e):
@@ -338,5 +350,8 @@ if __name__ == '__main__':
         else:
             print('查询错误：', e)
     else:
-        create_word_cloud(spider.movie_name)
-        sentiment_show(spider.movie_name)
+        try:
+            create_word_cloud(spider.movie_name)
+            sentiment_show(spider.movie_name)
+        except Exception as e:
+            print('创建词云出错。', e)
