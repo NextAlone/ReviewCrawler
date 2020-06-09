@@ -201,7 +201,7 @@ def cut_word():
         return word_list_cut
 
 
-def create_word_cloud():
+def create_word_cloud(movie_name):
     # 设置词云形状图片,numpy+PIL方式读取图片
     wc_mask = np.array(Image.open('WordCloud.jpg'))
     # 数据清洗词列表
@@ -238,12 +238,12 @@ def create_word_cloud():
     # 为云图去掉坐标轴
     plt.axis("off")
     plt.figure()
-    img = './Review/Cloud.png'
+    img = './Review/Cloud-' + movie_name + '.png'
     plt.savefig(img)
     plt.show()
 
 
-def data_show():
+def data_show(movie_name):
     f = open('result.txt', 'r', encoding='UTF-8')
     review_list = f.readlines()
     sentiments_list = []
@@ -257,12 +257,13 @@ def data_show():
     plt.ylabel('数量')
     plt.title('情感分析')
     plt.show()
-    img = './Review/sentiments.png'
+    img = './Review/sentiments-' + movie_name + '.png'
     plt.savefig(img)
 
 
 if __name__ == '__main__':
     login()
-    spider_kind()
-    create_word_cloud()
-    data_show()
+    spider = Spider()
+    spider.spider_kind()
+    create_word_cloud(spider.movie_name)
+    data_show(spider.movie_name)
