@@ -15,20 +15,23 @@ from selenium.webdriver.chrome.options import Options
 from snownlp import SnowNLP
 from wordcloud import WordCloud
 
-# 设置词云路径
+# 设置词云字体路径
 WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
 
 session = requests.Session()
+# 设置代理
 proxies = {
-    "http": "http://223.167.7.112:8060",
     "http": "http://222.184.7.206:40908",
+    "http": "http://223.167.7.112:8060",
     "https": "http://223.243.4.51:4216",
 }
+# 设置头部
 headers = {
     "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4164.4 Safari/537.36',
 }
 
 
+# 定义登录
 def login():
     url = "https://accounts.douban.com/j/mobile/login/basic"
     data = {
@@ -42,11 +45,16 @@ def login():
 
 
 class Spider:
+    """
+    爬虫类
+    """
+
     def __init__(self):
         self.movie_url = ''
         self.movie_id = 000
         self.movie_name = ''
 
+    # 根据URL查找
     def spider_url(self, review_url):
         page = 0
         f = open('result.txt', 'a+', encoding="utf-8")
@@ -87,6 +95,7 @@ class Spider:
                 print("大约共{0}页评论".format(page - 1))
                 break
 
+    # 根据ID查找
     def spider_id(self, review_id):
         page = 0
         f = open('result.txt', 'a+', encoding='utf-8')
@@ -128,6 +137,7 @@ class Spider:
                 print("大约共{0}页评论".format(page - 1))
                 break
 
+    # 根据名称查找
     @staticmethod
     def spider_name(review_name):
         params = urlencode({'search_text': review_name})
@@ -140,8 +150,7 @@ class Spider:
         # 利用selenium模拟浏览器，找到电影的url
         chrome_options = Options()
         # chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
-        # chrome_options.add_argument('--headless')
-        # chrome_options.add_argument("--proxy-server=http://223.167.7.112:8060")
+        chrome_options.add_argument('--headless')
         chrome_options.add_argument(
             'User-Agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15"')
         # chrome_options.add_argument('--no-sandbox')
@@ -157,7 +166,6 @@ class Spider:
         # 每次写入前清空文件
         path = os.getcwd()
         fn = path + './Review/data.csv'
-
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
             wr.writerow(['Review'])
@@ -213,6 +221,7 @@ class Spider:
             print("sorry,输入错误！")
 
 
+# 定义词汇分割
 def cut_word():
     with open('./Review/data.csv', 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
@@ -223,17 +232,9 @@ def cut_word():
         word_list_cut = "/".join(word_list)
         print(word_list_cut)
         return word_list_cut
-    # with open('/Review/result.txt', 'r', encoding='utf-8') as file:
-    #     # 读取文件里面的全部内容
-    #     comment_txt = file.read()
-    #     # 使用jieba进行分割
-    #     word_list = jieba.cut(comment_txt)
-    #     print('***********', word_list)
-    #     word_list_cut = "/".join(word_list)
-    #     print(word_list_cut)
-    #     return word_list_cut
 
 
+# 创建词云
 def create_word_cloud(movie_name):
     # 设置词云形状图片,numpy+PIL方式读取图片
     wc_mask = np.array(Image.open('WordCloud.jpg'))
@@ -276,7 +277,8 @@ def create_word_cloud(movie_name):
     print('文件已保存：', img)
 
 
-def data_show(movie_name):
+# 生成情感分析
+def sentiment_show(movie_name):
     f = open('result.txt', 'r', encoding='UTF-8')
     review_list = f.readlines()
     sentiments_list = []
@@ -308,4 +310,4 @@ if __name__ == '__main__':
             print('查询错误：', e)
     else:
         create_word_cloud(spider.movie_name)
-        data_show(spider.movie_name)
+        sentiment_show(spider.movie_name)
