@@ -38,6 +38,11 @@ def login():
 
 
 class Spider:
+    def __init__(self):
+        self.movie_url = ''
+        self.movie_id = 000
+        self.movie_name = ''
+
     @staticmethod
     def spider_url(review_url):
         page = 0
@@ -168,21 +173,20 @@ class Spider:
                 print("大约共{0}页评论".format(page - 1))
                 break
 
-
-# 定义搜索类型
-def spider_kind():
-    kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
-    if kind == 1:
-        movie_url = input("请输入电影链接:")
-        Spider.spider_url(movie_url)
-    elif kind == 2:
-        movie_id = input("请输入电影id:")
-        Spider.spider_id(movie_id)
-    elif kind == 3:
-        movie_name = input("请输入电影名:")
-        Spider.spider_name(movie_name)
-    else:
-        print("sorry,输入错误！")
+    # 定义搜索类型
+    def spider_kind(self):
+        kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
+        if kind == 1:
+            self.movie_url = input("请输入电影链接:")
+            Spider.spider_url(self.movie_url)
+        elif kind == 2:
+            self.movie_id = input("请输入电影id:")
+            Spider.spider_id(self.movie_id)
+        elif kind == 3:
+            self.movie_name = input("请输入电影名:")
+            Spider.spider_name(self.movie_name)
+        else:
+            print("sorry,输入错误！")
 
 
 def cut_word():
