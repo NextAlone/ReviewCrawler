@@ -1,3 +1,5 @@
+import csv
+import os
 import random
 import time
 from urllib.parse import urlencode
@@ -19,6 +21,8 @@ WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
 session = requests.Session()
 proxies = {
     "http": "http://223.167.7.112:8060",
+    "http": "http://222.184.7.206:40908",
+    "https": "http://223.243.4.51:4216",
 }
 headers = {
     "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4164.4 Safari/537.36',
@@ -28,8 +32,8 @@ headers = {
 def login():
     url = "https://accounts.douban.com/j/mobile/login/basic"
     data = {
-        'name': '豆瓣账号',
-        'password': '密码',
+        'name': '18501910988',
+        'password': r'Q3aF3BiQvcr!vuP',
         'remember': 'false'
     }
     # 设置代理，从西刺免费代理网站上找出一个可用的代理IP
@@ -56,14 +60,19 @@ class Spider:
                 'sort': 'new_score',
                 'status': 'P'
             }
-            html = session.get(url=comment_url, params=params, headers=headers, proxies=proxies)
+            html = session.get(
+                url=comment_url,
+                params=params,
+                headers=headers,
+                proxies=proxies)
             page += 1
             print(
                 "开始爬取第{0}页***********************************************************************：".format(page))
             print(html.url)
             xpath_tree = etree.HTML(html.text)
             if page == 0:
-                self.movie_name = xpath_tree.xpath('//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
+                self.movie_name = xpath_tree.xpath(
+                    '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
             if len(comment_divs) > 2:
                 # 获取每一条评论的具体内容
@@ -91,7 +100,11 @@ class Spider:
                 'sort': 'new_score',
                 'status': 'P'
             }
-            html = session.get(url=move_url, params=params, headers=headers, proxies=proxies)
+            html = session.get(
+                url=move_url,
+                params=params,
+                headers=headers,
+                proxies=proxies)
             print(html.url)
             page += 1
             print(
@@ -99,7 +112,8 @@ class Spider:
             print(html.url)
             xpath_tree = etree.HTML(html.text)
             if page == 1:
-                self.movie_name = xpath_tree.xpath('//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
+                self.movie_name = xpath_tree.xpath(
+                    '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
             if len(comment_divs) > 2:
                 # 获取每一条评论的具体内容
@@ -126,7 +140,8 @@ class Spider:
         # 利用selenium模拟浏览器，找到电影的url
         chrome_options = Options()
         # chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
-        chrome_options.add_argument('--headless')
+        # chrome_options.add_argument('--headless')
+        # chrome_options.add_argument("--proxy-server=http://223.167.7.112:8060")
         chrome_options.add_argument(
             'User-Agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15"')
         # chrome_options.add_argument('--no-sandbox')
@@ -138,43 +153,49 @@ class Spider:
         print(html.url)
         first_result = drive.find_element_by_xpath(
             '//div[@id="root"]/div/div[2]/div[1]/div[1]/div/div[1]/div/div[1]/a').get_attribute('href')
-        # first_result = 'https://movie.douban.com/subject/26266893/'
         page = 0
         # 每次写入前清空文件
-        f = open('result.txt', 'a+', encoding=html.encoding)
-        f.seek(0)
-        f.truncate()
-        while True:
-            move_url = first_result + '/comments?'
-            params = {
-                'start': page * 20,
-                'limit': 20,
-                'sort': 'new_score',
-                'status': 'P'
-            }
-            html = requests.get(
-                move_url,
-                params=params,
-                headers=headers,
-                timeout=3)
-            page += 1
-            print(
-                "开始爬取第{0}页***********************************************************************：".format(page))
-            print(html.url)
-            xpath_tree = etree.HTML(html.text)
-            comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
-            if len(comment_divs) > 2:
-                # 获取每一条评论的具体内容
-                for comment_div in comment_divs:
-                    comment = comment_div.xpath('./div[2]/p/span/text()')
-                    if len(comment) > 0:
-                        print(comment[0])
-                        f.write(comment[0] + '\n')
-                time.sleep(int(random.choice([0.5, 0.2, 0.3])))
-            else:
-                f.close()
-                print("大约共{0}页评论".format(page - 1))
-                break
+        path = os.getcwd()
+        fn = path + './Review/data.csv'
+
+        with open(fn, 'w', encoding='utf_8_sig') as fp:
+            wr = csv.writer(fp)
+            wr.writerow(['Review'])
+            f = open('./Review/result.txt', 'a+', encoding=html.encoding)
+            f.seek(0)
+            f.truncate()
+            while True:
+                move_url = first_result + '/comments?'
+                params = {
+                    'start': page * 20,
+                    'limit': 20,
+                    'sort': 'new_score',
+                    'status': 'P'
+                }
+                html = requests.get(
+                    move_url,
+                    params=params,
+                    headers=headers,
+                    timeout=3)
+                page += 1
+                print(
+                    "开始爬取第{0}页***********************************************************************：".format(page))
+                print(html.url)
+                xpath_tree = etree.HTML(html.text)
+                comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
+                if len(comment_divs) > 2:
+                    # 获取每一条评论的具体内容
+                    for comment_div in comment_divs:
+                        comment = comment_div.xpath('./div[2]/p/span/text()')
+                        if len(comment) > 0:
+                            print(comment[0])
+                            f.write(comment[0] + '\n')
+                            wr.writerow([comment[0]])
+                    time.sleep(int(random.choice([0.5, 0.2, 0.3])))
+                else:
+                    f.close()
+                    print("大约共{0}页评论".format(page - 1))
+                    break
 
     # 定义搜索类型
     def spider_kind(self):
@@ -193,7 +214,7 @@ class Spider:
 
 
 def cut_word():
-    with open('result.txt', 'r', encoding='utf-8') as file:
+    with open('./Review/data.csv', 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
         comment_txt = file.read()
         # 使用jieba进行分割
@@ -202,6 +223,15 @@ def cut_word():
         word_list_cut = "/".join(word_list)
         print(word_list_cut)
         return word_list_cut
+    # with open('/Review/result.txt', 'r', encoding='utf-8') as file:
+    #     # 读取文件里面的全部内容
+    #     comment_txt = file.read()
+    #     # 使用jieba进行分割
+    #     word_list = jieba.cut(comment_txt)
+    #     print('***********', word_list)
+    #     word_list_cut = "/".join(word_list)
+    #     print(word_list_cut)
+    #     return word_list_cut
 
 
 def create_word_cloud(movie_name):
@@ -225,14 +255,13 @@ def create_word_cloud(movie_name):
         mask=wc_mask,
         background_color="white",
         stopwords=stop_words,
-        max_words=50,
-        scale=4,
+        max_words=100,
+        scale=32,
         max_font_size=50,
         random_state=42,
         font_path=WC_FONT_PATH)
     # 生成词云
     wc.generate(cut_word())
-
     # 在只设置mask的情况下,你将会得到一个拥有图片形状的词云
     # 开始画图
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
@@ -241,9 +270,9 @@ def create_word_cloud(movie_name):
     # 为云图去掉坐标轴
     plt.axis("off")
     plt.figure()
-    img = './Review/Cloud-' + movie_name + '.png'
-    plt.savefig(img)
+    img = './Review/词云-' + movie_name + '.png'
     plt.show()
+    wc.to_file(img)
     print('文件已保存：', img)
 
 
@@ -260,9 +289,10 @@ def data_show(movie_name):
     plt.xlabel('情感概率')
     plt.ylabel('数量')
     plt.title('情感分析')
+    img = './Review/情感分析-' + movie_name + '.png'
+    fig = plt.gcf()
     plt.show()
-    img = './Review/sentiments-' + movie_name + '.jpg'
-    plt.savefig(img)
+    fig.savefig(img)
     print('文件已保存：', img)
 
 
