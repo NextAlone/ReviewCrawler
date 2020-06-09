@@ -43,8 +43,7 @@ class Spider:
         self.movie_id = 000
         self.movie_name = ''
 
-    @staticmethod
-    def spider_url(review_url):
+    def spider_url(self, review_url):
         page = 0
         f = open('result.txt', 'a+', encoding="utf-8")
         f.seek(0)
@@ -57,12 +56,14 @@ class Spider:
                 'sort': 'new_score',
                 'status': 'P'
             }
-            html = session.get(url=comment_url, params=params, proxies=proxies)
+            html = session.get(url=comment_url, params=params, headers=headers, proxies=proxies)
             page += 1
             print(
                 "开始爬取第{0}页***********************************************************************：".format(page))
             print(html.url)
             xpath_tree = etree.HTML(html.text)
+            if page == 0:
+                self.movie_name = xpath_tree.xpath('//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
             if len(comment_divs) > 2:
                 # 获取每一条评论的具体内容
@@ -77,8 +78,7 @@ class Spider:
                 print("大约共{0}页评论".format(page - 1))
                 break
 
-    @staticmethod
-    def spider_id(review_id):
+    def spider_id(self, review_id):
         page = 0
         f = open('result.txt', 'a+', encoding='utf-8')
         f.seek(0)
@@ -91,13 +91,15 @@ class Spider:
                 'sort': 'new_score',
                 'status': 'P'
             }
-            html = session.get(url=move_url, params=params, proxies=proxies)
+            html = session.get(url=move_url, params=params, headers=headers, proxies=proxies)
             print(html.url)
             page += 1
             print(
                 "开始爬取第{0}页***********************************************************************：".format(page))
             print(html.url)
             xpath_tree = etree.HTML(html.text)
+            if page == 1:
+                self.movie_name = xpath_tree.xpath('//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
             if len(comment_divs) > 2:
                 # 获取每一条评论的具体内容
@@ -110,6 +112,7 @@ class Spider:
             else:
                 f.close()
                 print("大约共{0}页评论".format(page - 1))
+                break
 
     @staticmethod
     def spider_name(review_name):
@@ -178,13 +181,13 @@ class Spider:
         kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
         if kind == 1:
             self.movie_url = input("请输入电影链接:")
-            Spider.spider_url(self.movie_url)
+            self.spider_url(self.movie_url)
         elif kind == 2:
             self.movie_id = input("请输入电影id:")
-            Spider.spider_id(self.movie_id)
+            self.spider_id(self.movie_id)
         elif kind == 3:
             self.movie_name = input("请输入电影名:")
-            Spider.spider_name(self.movie_name)
+            self.spider_name(self.movie_name)
         else:
             print("sorry,输入错误！")
 
@@ -241,6 +244,7 @@ def create_word_cloud(movie_name):
     img = './Review/Cloud-' + movie_name + '.png'
     plt.savefig(img)
     plt.show()
+    print('文件已保存：', img)
 
 
 def data_show(movie_name):
@@ -257,13 +261,18 @@ def data_show(movie_name):
     plt.ylabel('数量')
     plt.title('情感分析')
     plt.show()
-    img = './Review/sentiments-' + movie_name + '.png'
+    img = './Review/sentiments-' + movie_name + '.jpg'
     plt.savefig(img)
+    print('文件已保存：', img)
 
 
 if __name__ == '__main__':
-    login()
     spider = Spider()
-    spider.spider_kind()
-    create_word_cloud(spider.movie_name)
-    data_show(spider.movie_name)
+    try:
+        login()
+        spider.spider_kind()
+    except Exception as e:
+        print('查询错误：', e)
+    else:
+        create_word_cloud(spider.movie_name)
+        data_show(spider.movie_name)
