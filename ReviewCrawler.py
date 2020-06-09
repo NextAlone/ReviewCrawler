@@ -62,86 +62,92 @@ class Spider:
     # 根据URL查找
     def spider_url(self, review_url):
         page = 0
-        f = open('result.txt', 'a+', encoding="utf-8")
-        f.seek(0)
-        f.truncate()
-        while True:
-            comment_url = review_url[:42] + 'comments'
-            params = {
-                'start': page * 20,
-                'limit': 20,
-                'sort': 'new_score',
-                'status': 'P'
-            }
-            html = session.get(
-                url=comment_url,
-                params=params,
-                headers=headers,
-                proxies=proxies)
-            page += 1
-            print(
-                "开始爬取第{0}页***********************************************************************：".format(page))
-            print(html.url)
-            xpath_tree = etree.HTML(html.text)
-            if page == 0:
-                self.movie_name = xpath_tree.xpath(
-                    '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
-            comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
-            if len(comment_divs) > 2:
-                # 获取每一条评论的具体内容
-                for comment_div in comment_divs:
-                    comment = comment_div.xpath('./div[2]/p/span/text()')
-                    if len(comment) > 0:
-                        print(comment[0])
-                        f.write(comment[0] + '\n')
-                time.sleep(int(random.choice([0.5, 0.2, 0.3])))
-            else:
-                f.close()
-                print("大约共{0}页评论".format(page - 1))
-                break
+        path = os.getcwd()
+        fn = path + './Review/url-data.csv'
+        with open(fn, 'w', encoding='utf_8_sig') as fp:
+            wr = csv.writer(fp)
+            wr.writerow(['Review'])
+            while True:
+                comment_url = review_url[:42] + 'comments'
+                params = {
+                    'start': page * 20,
+                    'limit': 20,
+                    'sort': 'new_score',
+                    'status': 'P'
+                }
+                html = session.get(
+                    url=comment_url,
+                    params=params,
+                    headers=headers,
+                    proxies=proxies)
+                page += 1
+                print(
+                    "开始爬取第{0}页***********************************************************************：".format(page))
+                print(html.url)
+                xpath_tree = etree.HTML(html.text)
+                if page == 0:
+                    self.movie_name = str(xpath_tree.xpath(
+                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip().replace('短评', '').replace(' ', '-')
+                comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
+                if len(comment_divs) > 2:
+                    # 获取每一条评论的具体内容
+                    for comment_div in comment_divs:
+                        comment = comment_div.xpath('./div[2]/p/span/text()')
+                        if len(comment) > 0:
+                            print(comment[0])
+                            wr.writerow([comment[0]])
+                    time.sleep(int(random.choice([0.5, 0.2, 0.3])))
+                else:
+                    print("大约共{0}页评论".format(page - 1))
+                    break
+        new_filename = path + './Review/' + self.movie_name + '-data.csv'
+        os.rename(fn, new_filename)
 
     # 根据ID查找
     def spider_id(self, review_id):
         page = 0
-        f = open('result.txt', 'a+', encoding='utf-8')
-        f.seek(0)
-        f.truncate()
-        while True:
-            move_url = 'https://movie.douban.com/subject/' + review_id + '/comments?'
-            params = {
-                'start': page * 20,
-                'limit': 20,
-                'sort': 'new_score',
-                'status': 'P'
-            }
-            html = session.get(
-                url=move_url,
-                params=params,
-                headers=headers,
-                # proxies=proxies
-            )
-            print(html.url)
-            page += 1
-            print(
-                "开始爬取第{0}页***********************************************************************：".format(page))
-            print(html.url)
-            xpath_tree = etree.HTML(html.text)
-            if page == 1:
-                self.movie_name = xpath_tree.xpath(
-                    '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
-            comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
-            if len(comment_divs) > 2:
-                # 获取每一条评论的具体内容
-                for comment_div in comment_divs:
-                    comment = comment_div.xpath('./div[2]/p/span/text()')
-                    if len(comment) > 0:
-                        print(comment[0])
-                        f.write(comment[0] + '\n')
-                time.sleep(int(random.choice([0.5, 0.2, 0.3])))
-            else:
-                f.close()
-                print("大约共{0}页评论".format(page - 1))
-                break
+        path = os.getcwd()
+        fn = path + './Review/' + review_id + '-data.csv'
+        with open(fn, 'w', encoding='utf_8_sig') as fp:
+            wr = csv.writer(fp)
+            wr.writerow(['Review'])
+            while True:
+                move_url = 'https://movie.douban.com/subject/' + review_id + '/comments?'
+                params = {
+                    'start': page * 20,
+                    'limit': 20,
+                    'sort': 'new_score',
+                    'status': 'P'
+                }
+                html = session.get(
+                    url=move_url,
+                    params=params,
+                    headers=headers,
+                    # proxies=proxies
+                )
+                print(html.url)
+                page += 1
+                print(
+                    "开始爬取第{0}页***********************************************************************：".format(page))
+                print(html.url)
+                xpath_tree = etree.HTML(html.text)
+                if page == 1:
+                    self.movie_name = str(xpath_tree.xpath(
+                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip().replace('短评', '').replace(' ', '-')
+                comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
+                if len(comment_divs) > 2:
+                    # 获取每一条评论的具体内容
+                    for comment_div in comment_divs:
+                        comment = comment_div.xpath('./div[2]/p/span/text()')
+                        if len(comment) > 0:
+                            print(comment[0])
+                            wr.writerow([comment[0]])
+                    time.sleep(int(random.choice([0.5, 0.2, 0.3])))
+                else:
+                    print("大约共{0}页评论".format(page - 1))
+                    break
+        new_filename = path + './Review/' + self.movie_name + '-data.csv'
+        os.rename(fn, new_filename)
 
     # 根据名称查找
 
@@ -172,13 +178,10 @@ class Spider:
         page = 0
         # 每次写入前清空文件
         path = os.getcwd()
-        fn = path + './Review/' + review_name + '_data.csv'
+        fn = path + './Review/' + review_name + '-data.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
             wr.writerow(['Review'])
-            f = open('./Review/result.txt', 'a+', encoding=html.encoding)
-            f.seek(0)
-            f.truncate()
             while True:
                 move_url = first_result + '/comments?'
                 params = {
@@ -198,8 +201,8 @@ class Spider:
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
                 if page == 1:
-                    self.movie_name = xpath_tree.xpath(
-                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
+                    self.movie_name = str(xpath_tree.xpath(
+                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).replace('短评', '').strip().replace(' ', '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -207,14 +210,13 @@ class Spider:
                         comment = comment_div.xpath('./div[2]/p/span/text()')
                         if len(comment) > 0:
                             print(comment[0])
-                            f.write(comment[0] + '\n')
                             wr.writerow([comment[0]])
                     time.sleep(int(random.choice([0.5, 0.2, 0.3])))
                 else:
-
-                    f.close()
                     print("大约共{0}页评论".format(page - 1))
                     break
+        new_filename = path + './Review/' + self.movie_name + '-data.csv'
+        os.rename(fn, new_filename)
 
     # 定义搜索类型
     def spider_kind(self):
@@ -252,7 +254,7 @@ class Spider:
 
 # 定义词汇分割
 def cut_word(movie_name):
-    file_path = r'./Review/' + movie_name + '_data.csv'
+    file_path = r'./Review/' + movie_name + '-data.csv'
     with open(file_path, 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
         comment_txt = file.read()
@@ -319,7 +321,7 @@ def create_word_cloud(movie_name):
 
 # 生成情感分析
 def sentiment_show(movie_name):
-    file_path = r'./Review/' + movie_name + '_data.csv'
+    file_path = r'./Review/' + movie_name + '-data.csv'
     f = open(file_path, 'r', encoding='UTF-8')
     review_list = f.readlines()
     sentiments_list = []
