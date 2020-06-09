@@ -185,7 +185,7 @@ class Spider:
                     'sort': 'new_score',
                     'status': 'P'
                 }
-                html = requests.get(
+                html = session.get(
                     move_url,
                     params=params,
                     headers=headers,
@@ -209,6 +209,7 @@ class Spider:
                             wr.writerow([comment[0]])
                     time.sleep(int(random.choice([0.5, 0.2, 0.3])))
                 else:
+
                     f.close()
                     print("大约共{0}页评论".format(page - 1))
                     break
