@@ -54,7 +54,8 @@ class Spider:
             }
             html = session.get(url=comment_url, params=params, proxies=proxies)
             page += 1
-            print("开始爬取第{0}页***********************************************************************：".format(page))
+            print(
+                "开始爬取第{0}页***********************************************************************：".format(page))
             print(html.url)
             xpath_tree = etree.HTML(html.text)
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
@@ -88,7 +89,8 @@ class Spider:
             html = session.get(url=move_url, params=params, proxies=proxies)
             print(html.url)
             page += 1
-            print("开始爬取第{0}页***********************************************************************：".format(page))
+            print(
+                "开始爬取第{0}页***********************************************************************：".format(page))
             print(html.url)
             xpath_tree = etree.HTML(html.text)
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
@@ -108,7 +110,11 @@ class Spider:
     def spider_name(review_name):
         params = urlencode({'search_text': review_name})
         move_url = 'https://movie.douban.com/subject_search'
-        html = requests.get(url=move_url, headers=headers, params=params, proxies=proxies)
+        html = requests.get(
+            url=move_url,
+            headers=headers,
+            params=params,
+            proxies=proxies)
         # 利用selenium模拟浏览器，找到电影的url
         chrome_options = Options()
         # chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
@@ -117,8 +123,9 @@ class Spider:
             'User-Agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15"')
         # chrome_options.add_argument('--no-sandbox')
         # chrome_options.add_argument('--disable-dev-shm-usage')
-        drive = webdriver.Chrome(r'C:\Program Files (x86)\Google\Chrome Dev\Application\chromedriver.exe',
-                                 options=chrome_options)
+        drive = webdriver.Chrome(
+            r'C:\Program Files (x86)\Google\Chrome Dev\Application\chromedriver.exe',
+            options=chrome_options)
         drive.get(html.url)
         print(html.url)
         first_result = drive.find_element_by_xpath(
@@ -137,9 +144,14 @@ class Spider:
                 'sort': 'new_score',
                 'status': 'P'
             }
-            html = requests.get(move_url, params=params, headers=headers, timeout=3)
+            html = requests.get(
+                move_url,
+                params=params,
+                headers=headers,
+                timeout=3)
             page += 1
-            print("开始爬取第{0}页***********************************************************************：".format(page))
+            print(
+                "开始爬取第{0}页***********************************************************************：".format(page))
             print(html.url)
             xpath_tree = etree.HTML(html.text)
             comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
@@ -189,10 +201,28 @@ def create_word_cloud():
     # 设置词云形状图片,numpy+PIL方式读取图片
     wc_mask = np.array(Image.open('WordCloud.jpg'))
     # 数据清洗词列表
-    stop_words = {'就是', '不是', '但是', '还是', '只是', '这样', '这个', '一个', '什么', '电影', '没有'}
+    stop_words = {
+        '就是',
+        '不是',
+        '但是',
+        '还是',
+        '只是',
+        '这样',
+        '这个',
+        '一个',
+        '什么',
+        '电影',
+        '没有'}
     # 设置词云的一些配置，如：字体，背景色，词云形状，大小,生成词云对象
-    wc = WordCloud(mask=wc_mask, background_color="white", stopwords=stop_words, max_words=50, scale=4,
-                   max_font_size=50, random_state=42, font_path=WC_FONT_PATH)
+    wc = WordCloud(
+        mask=wc_mask,
+        background_color="white",
+        stopwords=stop_words,
+        max_words=50,
+        scale=4,
+        max_font_size=50,
+        random_state=42,
+        font_path=WC_FONT_PATH)
     # 生成词云
     wc.generate(cut_word())
 
