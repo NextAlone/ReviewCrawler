@@ -21,8 +21,8 @@ WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
 session = requests.Session()
 # 设置代理
 proxies = {
-    "http": "http://222.184.7.206:40908",
-    "http": "http://223.167.7.112:8060",
+    "http": "http://120.24.231.203:8080",
+    # "http": "http://223.167.7.112:8060",
     "https": "http://223.243.4.51:4216",
 }
 # 设置头部
@@ -37,10 +37,13 @@ def login():
     data = {
         'name': '18501910988',
         'password': r'Q3aF3BiQvcr!vuP',
-        'remember': 'false'
+        'remember': 'false',
     }
+    cookies = {
+        'cookie': 'bid=iBxpSJYJUHM; __gads=ID=df4e600ad2ea16b3:T=1588037075:S=ALNI_MbdX7EPlcOyNNLXl3KlEAwzDW1hsQ; __utma=30149280.476129765.1588037078.1588037078.1588037078.1; __utmc=30149280; __utmz=30149280.1588037078.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); gr_user_id=7ffae438-179f-4c1e-8f40-830c44acb32c; _vwo_uuid_v2=DE151CB8C2F41E16D472D516641BEC938|e7a486aab194314932b78465aead15b2; viewed="26329916_2304817"; __yadk_uid=S0unLCOmj4lfHiznba5rU3JGimsx51qC; ll="118226"; push_noty_num=0; push_doumail_num=0; douban-profile-remind=1; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1591675008%2C%22https%3A%2F%2Fsearch.douban.com%2Fmovie%2Fsubject_search%3Fsearch_text%3D%25E6%25B5%2581%25E6%25B5%25AA%25E5%259C%25B0%25E7%2590%2583%22%5D; _pk_ses.100001.4cf6=*; dbcl2="197952164:C60grevUaZQ"; ck=ZjZN; _pk_id.100001.4cf6=3bd271c5fbad1e33.1591625554.7.1591675017.1591673070.; ap_v=0,6.0'}
     # 设置代理，从西刺免费代理网站上找出一个可用的代理IP
-    user = session.post(url=url, headers=headers, data=data, proxies=proxies)
+    user = session.post(url=url, headers=headers, data=data)
+    # user = session.post(url=url, headers=headers, cookies=cookies)
     print(user.text)
 
 
@@ -50,9 +53,9 @@ class Spider:
     """
 
     def __init__(self):
-        self.movie_url = ''
-        self.movie_id = 000
-        self.movie_name = ''
+        self.movie_url = None
+        self.movie_id = None
+        self.movie_name = None
 
     # 根据URL查找
     def spider_url(self, review_url):
@@ -113,7 +116,8 @@ class Spider:
                 url=move_url,
                 params=params,
                 headers=headers,
-                proxies=proxies)
+                # proxies=proxies
+            )
             print(html.url)
             page += 1
             print(
@@ -138,15 +142,16 @@ class Spider:
                 break
 
     # 根据名称查找
-    @staticmethod
-    def spider_name(review_name):
+
+    def spider_name(self, review_name):
         params = urlencode({'search_text': review_name})
         move_url = 'https://movie.douban.com/subject_search'
         html = requests.get(
             url=move_url,
             headers=headers,
             params=params,
-            proxies=proxies)
+            # proxies=proxies
+        )
         # 利用selenium模拟浏览器，找到电影的url
         chrome_options = Options()
         # chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
@@ -190,6 +195,9 @@ class Spider:
                     "开始爬取第{0}页***********************************************************************：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
+                if page == 1:
+                    self.movie_name = xpath_tree.xpath(
+                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text.split(' ')[0]
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -207,18 +215,38 @@ class Spider:
 
     # 定义搜索类型
     def spider_kind(self):
-        kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
-        if kind == 1:
-            self.movie_url = input("请输入电影链接:")
-            self.spider_url(self.movie_url)
-        elif kind == 2:
-            self.movie_id = input("请输入电影id:")
-            self.spider_id(self.movie_id)
-        elif kind == 3:
-            self.movie_name = input("请输入电影名:")
-            self.spider_name(self.movie_name)
+        try:
+            kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
+            if kind == 1:
+                self.movie_url = input("请输入电影链接:")
+                if self.movie_name is None:
+                    raise RuntimeError('电影链接为空')
+                self.spider_url(self.movie_url)
+            elif kind == 2:
+                self.movie_id = input("请输入电影id:")
+                if self.movie_name is None:
+                    raise RuntimeError('电影id为空')
+                self.spider_id(self.movie_id)
+            elif kind == 3:
+                self.movie_name = input("请输入电影名:")
+                if self.movie_name is None:
+                    raise RuntimeError('电影名为空')
+                self.spider_name(self.movie_name)
+            else:
+                print("搜索类型输入错误！")
+                print('*' * 50)
+                self.spider_kind()
+        except Exception as exception:
+            if 'Unable to locate element' in str(exception):
+                print('IP封禁或无此对象：', exception)
+            elif 'HTTPSConnectionPool' in str(exception):
+                print('连接尝试失败：', exception)
+            else:
+                print("信息输入不全或错误：", exception)
+            print('*' * 50)
+            self.spider_kind()
         else:
-            print("sorry,输入错误！")
+            print('输入正确，正在查询。')
 
 
 # 定义词汇分割
