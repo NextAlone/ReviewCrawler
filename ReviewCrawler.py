@@ -1,6 +1,7 @@
 import csv
 import os
 import random
+import shutil
 import time
 from urllib.parse import urlencode
 
@@ -87,7 +88,8 @@ class Spider:
                 xpath_tree = etree.HTML(html.text)
                 if page == 0:
                     self.movie_name = str(xpath_tree.xpath(
-                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip().replace('短评', '').replace(' ', '-')
+                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip(' ').replace('短评', '').replace(' ',
+                                                                                                                  '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -101,7 +103,7 @@ class Spider:
                     print("大约共{0}页评论".format(page - 1))
                     break
         new_filename = path + './Review/' + self.movie_name + '-data.csv'
-        os.rename(fn, new_filename)
+        shutil.move(fn, new_filename)
 
     # 根据ID查找
     def spider_id(self, review_id):
@@ -133,7 +135,8 @@ class Spider:
                 xpath_tree = etree.HTML(html.text)
                 if page == 1:
                     self.movie_name = str(xpath_tree.xpath(
-                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip().replace('短评', '').replace(' ', '-')
+                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip(' ').replace('短评', '').replace(' ',
+                                                                                                                  '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -147,7 +150,7 @@ class Spider:
                     print("大约共{0}页评论".format(page - 1))
                     break
         new_filename = path + './Review/' + self.movie_name + '-data.csv'
-        os.rename(fn, new_filename)
+        shutil.move(fn, new_filename)
 
     # 根据名称查找
 
@@ -201,8 +204,10 @@ class Spider:
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
                 if page == 1:
-                    self.movie_name = str(xpath_tree.xpath(
-                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).replace('短评', '').strip().replace(' ', '-')
+                    self.movie_name = str(
+                        xpath_tree.xpath('//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).replace(
+                        '短评', '').strip(' ').replace(
+                        ' ', '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -216,7 +221,7 @@ class Spider:
                     print("大约共{0}页评论".format(page - 1))
                     break
         new_filename = path + './Review/' + self.movie_name + '-data.csv'
-        os.rename(fn, new_filename)
+        shutil.move(fn, new_filename)
 
     # 定义搜索类型
     def spider_kind(self):
@@ -224,12 +229,12 @@ class Spider:
             kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
             if kind == 1:
                 self.movie_url = input("请输入电影链接:")
-                if self.movie_name is None:
+                if self.movie_url is None:
                     raise RuntimeError('电影链接为空')
                 self.spider_url(self.movie_url)
             elif kind == 2:
                 self.movie_id = input("请输入电影id:")
-                if self.movie_name is None:
+                if self.movie_id is None:
                     raise RuntimeError('电影id为空')
                 self.spider_id(self.movie_id)
             elif kind == 3:
@@ -298,8 +303,8 @@ def create_word_cloud(movie_name):
         mask=wc_mask,
         background_color="white",
         stopwords=stop_words,
-        max_words=100,
-        scale=32,
+        max_words=len(movie_name) * 50,
+        scale=8,
         max_font_size=50,
         random_state=42,
         font_path=WC_FONT_PATH)
@@ -313,7 +318,7 @@ def create_word_cloud(movie_name):
     # 为云图去掉坐标轴
     plt.axis("off")
     plt.figure()
-    img = './Review/词云-' + movie_name + '.png'
+    img = './Review/' + movie_name + '-词云.png'
     plt.show()
     wc.to_file(img)
     print('文件已保存：', img)
@@ -334,7 +339,7 @@ def sentiment_show(movie_name):
     plt.xlabel('情感概率')
     plt.ylabel('数量')
     plt.title('情感分析-' + movie_name)
-    img = './Review/情感分析-' + movie_name + '.png'
+    img = './Review/' + movie_name + '-情感分析.png'
     fig = plt.gcf()
     plt.show()
     fig.savefig(img)
