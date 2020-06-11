@@ -18,9 +18,9 @@ from selenium.webdriver.chrome.options import Options
 from snownlp import SnowNLP
 from wordcloud import WordCloud
 
+# 设置词云字体路径
 from CrawlerProcess import send
 
-# 设置词云字体路径
 WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
 
 session = requests.Session()
@@ -63,6 +63,8 @@ class Spider:
         self.movie_url = None
         self.movie_id = None
         self.movie_name = None
+        self.score_dict = None
+        self.total_score = None
 
     def spider_url(self, review_url):
         """
@@ -71,12 +73,13 @@ class Spider:
         """
         page = 0
         path = os.getcwd()
-        fn = path + './Review/url-data.csv'
+        self.movie_url = review_url[:42]
+        fn = path + './Review/url-评论数据.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
             wr.writerow(['Review'])
             while True:
-                comment_url = review_url[:42] + 'comments'
+                comment_url = self.movie_url + 'comments'
                 params = {
                     'start': page * 20,
                     'limit': 20,
@@ -109,7 +112,7 @@ class Spider:
                 else:
                     print("大约共{0}页评论".format(page - 1))
                     break
-        new_filename = path + './Review/' + self.movie_name + '-data.csv'
+        new_filename = path + './Review/' + self.movie_name + '-评论数据.csv'
         shutil.move(fn, new_filename)
 
     def spider_id(self, review_id):
@@ -119,12 +122,13 @@ class Spider:
         """
         page = 0
         path = os.getcwd()
-        fn = path + './Review/' + review_id + '-data.csv'
+        self.movie_url = 'https://movie.douban.com/subject/' + review_id
+        fn = path + './Review/' + review_id + '-评论数据.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
             wr.writerow(['Review'])
             while True:
-                move_url = 'https://movie.douban.com/subject/' + review_id + '/comments?'
+                move_url = self.movie_url + '/comments?'
                 params = {
                     'start': page * 20,
                     'limit': 20,
@@ -159,8 +163,35 @@ class Spider:
                 else:
                     print("大约共{0}页评论".format(page - 1))
                     break
-        new_filename = path + './Review/' + self.movie_name + '-data.csv'
+        new_filename = path + './Review/' + self.movie_name + '-评论数据.csv'
         shutil.move(fn, new_filename)
+
+    def get_score(self):
+        """
+        根据id获取评分
+        :param:电影豆瓣ID
+        """
+
+        move_url = self.movie_url
+        html = session.get(
+            url=move_url,
+            headers=headers,
+        )
+        print(html.url)
+        xpath_tree = etree.HTML(html.text)
+        total_score = xpath_tree.xpath('//div[contains(@class,"rating_self")]/strong/text()')[0]
+        print(total_score)
+        self.total_score = total_score
+        score_dict = {}
+        for index in range(5, 0, -1):
+            score = str(xpath_tree.xpath(
+                '//div[contains(@class,"ratings-on-weight")]/div[{0}]/span[2]/text()'.format(index))[
+                            0]).strip().replace('%', '')
+            print(score)
+
+            score_dict.update({6 - index: round(float(score) * 0.01, 3)})
+        self.score_dict = score_dict
+        print('已获取电影评分。')
 
     def spider_name(self, review_name):
         """
@@ -188,17 +219,17 @@ class Spider:
             options=chrome_options)
         drive.get(html.url)
         print(html.url)
-        first_result = drive.find_element_by_xpath(
+        self.movie_url = drive.find_element_by_xpath(
             '//div[@id="root"]/div/div[2]/div[1]/div[1]/div/div[1]/div/div[1]/a').get_attribute('href')
+        # 抓取评论写入文件
         page = 0
-        # 每次写入前清空文件
         path = os.getcwd()
-        fn = path + './Review/' + review_name + '-data.csv'
+        fn = path + './Review/' + review_name + '-评论数据.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
             wr.writerow(['Review'])
+            move_url = self.movie_url + '/comments?'
             while True:
-                move_url = first_result + '/comments?'
                 params = {
                     'start': page * 20,
                     'limit': 20,
@@ -232,7 +263,7 @@ class Spider:
                 else:
                     print("大约共{0}页评论".format(page - 1))
                     break
-        new_filename = path + './Review/' + self.movie_name + '-data.csv'
+        new_filename = path + './Review/' + self.movie_name + '-评论数据.csv'
         shutil.move(fn, new_filename)
 
     def spider_kind(self):
@@ -269,6 +300,8 @@ class Spider:
                 print("信息输入不全或错误：", exception)
             print('*' * 50)
             self.spider_kind()
+        else:
+            self.get_score()
 
 
 def cut_word(movie_name):
@@ -277,7 +310,7 @@ def cut_word(movie_name):
     :param movie_name: 电影名称。
     :return:返回分割后的评论列表。
     """
-    file_path = r'./Review/' + movie_name + '-data.csv'
+    file_path = r'./Review/' + movie_name + '-评论数据.csv'
     with open(file_path, 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
         comment_txt = file.read()
@@ -290,7 +323,6 @@ def cut_word(movie_name):
         return word_list_cut
 
 
-# 生成词云蒙版
 def create_word_cloud_mask(movie_name):
     """
     生成词云蒙版
@@ -351,12 +383,12 @@ def create_word_cloud(movie_name):
     print('文件已保存：', img)
 
 
-def sentiment_show(movie_name):
+def create_sentiment(movie_name):
     """
      生成情感分析
     :param movie_name:
     """
-    file_path = r'./Review/' + movie_name + '-data.csv'
+    file_path = r'./Review/' + movie_name + '-评论数据.csv'
     f = open(file_path, 'r', encoding='UTF-8')
     review_list = f.readlines()
     sentiments_list = []
@@ -376,6 +408,40 @@ def sentiment_show(movie_name):
     print('文件已保存：', img)
 
 
+def create_score(movie):
+    # 读取文件
+    score_dict = movie.score_dict
+    total_score = movie.total_score
+    movie_name = movie.movie_name
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.tick_params(labelsize=16)
+    font = {'family': 'simhei',
+            'weight': 'normal',
+            'size': 16,
+            }
+    plt.figure()
+    plt.pie(score_dict.values(), labels=['一星', '二星', '三星', '四星', '五星'])
+    plt.title("豆瓣评分（" + total_score + '分）', font)
+    img = r'./Review/' + movie_name + '-评分饼图.png'
+    fig = plt.gcf()
+    # plt.show()
+    fig.savefig(img)
+    print('文件已保存：', img)
+    plt.figure()
+    plt.bar(score_dict.keys(), score_dict.values(), 0.4, color='g')
+    plt.xlabel("星级", font)
+    plt.ylabel("用户占比", font)
+    plt.title("豆瓣评分（" + total_score + '分）', font)
+    for a, b in zip(score_dict.keys(), score_dict.values()):
+        plt.text(a, b + 0.005, '%.3f' % b, ha='center', va='bottom', fontsize=10)
+
+    img = r'./Review/' + movie_name + '-评分柱状图.png'
+    fig = plt.gcf()
+    # plt.show()
+    fig.savefig(img)
+    print('文件已保存：', img)
+
+
 if __name__ == '__main__':
     spider = Spider()
     try:
@@ -388,9 +454,10 @@ if __name__ == '__main__':
             print('查询错误：', e)
     else:
         try:
+            create_score(spider)
             create_word_cloud(spider.movie_name)
-            sentiment_show(spider.movie_name)
-            file_name_suffix = ['-词云.png', '-情感分析.png']
+            create_sentiment(spider.movie_name)
+            file_name_suffix = ['-评分饼图.png', '-评分柱状图.png', '-词云.png', '-情感分析.png', '-评论数据.csv']
             send(spider.movie_name, './Review', file_name_suffix)
         except Exception as e:
             print('创建词云与情感分析出错。', e)

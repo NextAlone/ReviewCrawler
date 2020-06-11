@@ -1,10 +1,21 @@
 import os
 import smtplib
 from email import encoders
+from email.header import Header
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import formatdate
+from email.utils import formatdate, parseaddr, formataddr
+
+
+def format_addr(address):
+    """
+    生成格式化头部
+    :param address: 邮件地址
+    :return: 格式化的邮件地址头部
+    """
+    name, addr = parseaddr(address)
+    return formataddr((Header(name, 'utf-8').encode(), addr))
 
 
 class EmailSender(object):
@@ -90,7 +101,7 @@ class EmailSender(object):
         # 设置邮件根信息
         msg_root = MIMEMultipart("related")
         msg_root["Subject"] = subject
-        msg_root["From"] = self.from_addr
+        msg_root["From"] = format_addr(u'PythonCrawler <%s>' % self.from_addr)
         msg_root["To"] = ",".join(to_addrs)
         msg_root["CC"] = ",".join(cc_addrs)
         msg_root["Date"] = formatdate(localtime=True)
@@ -136,8 +147,8 @@ def send(title, path, file_name_suffix):
     mail_from = 'nextducts'
     mail_pass = 'EXBBVWLNKOQGIASN'
     mail_to = ['nextducts@163.com', '2463811949@qq.com', '1378099423@qq.com']
-    mail_cc = ['1310252406@qq.com']
-    subject = "豆瓣影评抓取--" + title
+    mail_cc = ['1310252406@qq.com', 'love5212138@gmail.com']
+    subject = "豆瓣电影抓取--" + title
     content = ['<html><body><h1>{0}</h1>'.format(subject), '</body></html>']
     attach_file_path = path
     attach_files = [str(title) + x for x in file_name_suffix]
