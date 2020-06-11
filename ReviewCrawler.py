@@ -18,6 +18,8 @@ from selenium.webdriver.chrome.options import Options
 from snownlp import SnowNLP
 from wordcloud import WordCloud
 
+from CrawlerProcess import send_mail
+
 # 设置词云字体路径
 WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
 
@@ -318,8 +320,8 @@ def create_word_cloud(movie_name):
     # 为云图去掉坐标轴
     plt.axis("off")
     plt.figure()
-    img = './Review/' + movie_name + '-词云.png'
-    plt.show()
+    img = r'./Review/' + movie_name + '-词云.png'
+    # plt.show()
     wc.to_file(img)
     print('文件已保存：', img)
 
@@ -339,9 +341,9 @@ def sentiment_show(movie_name):
     plt.xlabel('情感概率')
     plt.ylabel('数量')
     plt.title('情感分析-' + movie_name)
-    img = './Review/' + movie_name + '-情感分析.png'
+    img = r'./Review/' + movie_name + '-情感分析.png'
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     fig.savefig(img)
     print('文件已保存：', img)
 
@@ -360,5 +362,6 @@ if __name__ == '__main__':
         try:
             create_word_cloud(spider.movie_name)
             sentiment_show(spider.movie_name)
+            send_mail(spider.movie_name)
         except Exception as e:
-            print('创建词云出错。', e)
+            print('创建词云与情感分析出错。', e)
