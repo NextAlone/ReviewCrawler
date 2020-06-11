@@ -18,7 +18,7 @@ from selenium.webdriver.chrome.options import Options
 from snownlp import SnowNLP
 from wordcloud import WordCloud
 
-from CrawlerProcess import send_mail
+from CrawlerProcess import send
 
 # 设置词云字体路径
 WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
@@ -62,8 +62,10 @@ class Spider:
         self.movie_id = None
         self.movie_name = None
 
-    # 根据URL查找
     def spider_url(self, review_url):
+        """
+        根据URL查找
+        """
         page = 0
         path = os.getcwd()
         fn = path + './Review/url-data.csv'
@@ -98,7 +100,7 @@ class Spider:
                     for comment_div in comment_divs:
                         comment = comment_div.xpath('./div[2]/p/span/text()')
                         if len(comment) > 0:
-                            print(comment[0])
+                            # print(comment[0])
                             wr.writerow([comment[0]])
                     time.sleep(int(random.choice([0.5, 0.2, 0.3])))
                 else:
@@ -107,8 +109,10 @@ class Spider:
         new_filename = path + './Review/' + self.movie_name + '-data.csv'
         shutil.move(fn, new_filename)
 
-    # 根据ID查找
     def spider_id(self, review_id):
+        """
+        根据id查找
+        """
         page = 0
         path = os.getcwd()
         fn = path + './Review/' + review_id + '-data.csv'
@@ -145,7 +149,7 @@ class Spider:
                     for comment_div in comment_divs:
                         comment = comment_div.xpath('./div[2]/p/span/text()')
                         if len(comment) > 0:
-                            print(comment[0])
+                            # print(comment[0])
                             wr.writerow([comment[0]])
                     time.sleep(int(random.choice([0.5, 0.2, 0.3])))
                 else:
@@ -154,9 +158,10 @@ class Spider:
         new_filename = path + './Review/' + self.movie_name + '-data.csv'
         shutil.move(fn, new_filename)
 
-    # 根据名称查找
-
     def spider_name(self, review_name):
+        """
+        根据名称查找
+        """
         params = urlencode({'search_text': review_name})
         move_url = 'https://movie.douban.com/subject_search'
         html = requests.get(
@@ -216,7 +221,7 @@ class Spider:
                     for comment_div in comment_divs:
                         comment = comment_div.xpath('./div[2]/p/span/text()')
                         if len(comment) > 0:
-                            print(comment[0])
+                            # print(comment[0])
                             wr.writerow([comment[0]])
                     time.sleep(int(random.choice([0.5, 0.2, 0.3])))
                 else:
@@ -225,8 +230,10 @@ class Spider:
         new_filename = path + './Review/' + self.movie_name + '-data.csv'
         shutil.move(fn, new_filename)
 
-    # 定义搜索类型
     def spider_kind(self):
+        """
+        设置搜索类型
+        """
         try:
             kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
             if kind == 1:
@@ -267,9 +274,10 @@ def cut_word(movie_name):
         comment_txt = file.read()
         # 使用jieba进行分割
         word_list = jieba.cut(comment_txt)
-        print('***********', word_list)
+        print('分割评论。')
+        # print('***********', word_list)
         word_list_cut = "/".join(word_list)
-        print(word_list_cut)
+        # print(word_list_cut)
         return word_list_cut
 
 
@@ -362,6 +370,7 @@ if __name__ == '__main__':
         try:
             create_word_cloud(spider.movie_name)
             sentiment_show(spider.movie_name)
-            send_mail(spider.movie_name)
+            file_name_suffix = ['-词云.png', '-情感分析.png']
+            send(spider.movie_name, './Review', file_name_suffix)
         except Exception as e:
             print('创建词云与情感分析出错。', e)
