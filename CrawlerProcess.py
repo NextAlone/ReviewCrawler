@@ -123,7 +123,6 @@ class EmailSender(object):
         # 发送邮件
         try:
             self.smtp.sendmail(self.from_addr, to_addrs, msg_root.as_string())
-            print('邮件发送成功。')
         except Exception as e:
             print('邮件发送失败。错误信息：{0}'.format(e))
 
@@ -153,7 +152,13 @@ def send(title, path, file_name_suffix):
     attach_file_path = path
     attach_files = [str(title) + x for x in file_name_suffix]
     attach = [attach_file_path, attach_files]
-    # 实例化EmailSender
-    email_sender = EmailSender(mail_host)
-    email_sender.login(mail_from, mail_pass)
-    email_sender.send_email(subject, mail_to, mail_cc, content, 'html', attach)
+    try:
+        # 实例化EmailSender
+        email_sender = EmailSender(mail_host)
+        email_sender.login(mail_from, mail_pass)
+        email_sender.send_email(subject, mail_to, mail_cc, content, 'html', attach)
+    except Exception as  e:
+        print('邮件发送出现未知错误。错误信息：', e)
+    else:
+        print('邮件发送成功。')
+        return True
