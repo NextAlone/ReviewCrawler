@@ -56,7 +56,7 @@ class Spider:
         """
         根据URL查找。
         :param review_url:电影豆瓣URL
-        :return 输出为电影数据文件
+        :return: 调用后返回True，输出为电影数据文件
         """
         path = os.getcwd()
         self.movie_url = review_url[:42]
@@ -74,7 +74,7 @@ class Spider:
         """
         根据id查找
         :param:电影豆瓣ID
-        :return 输出为电影数据文件
+        :return: 调用后返回True，输出为电影数据文件
         """
         path = os.getcwd()
         self.movie_url = 'https://movie.douban.com/subject/' + review_id
@@ -92,7 +92,7 @@ class Spider:
         """
         根据名称查找
         :param 电影名称（模糊）。
-        :return 输出为电影数据文件
+        :return: 调用后返回True，输出为电影数据文件
         """
         params = urlencode({'search_text': review_name})
         move_url = 'https://movie.douban.com/subject_search'
@@ -134,7 +134,7 @@ class Spider:
         """
         获取评分数据
         :param writer: csv写入
-        :return:保存在电影数据中
+        :return: 调用后返回True，保存在电影数据中
         """
         move_url = self.movie_url
         html = session.get(
@@ -165,7 +165,7 @@ class Spider:
         """
         获取演职员数据
         :param writer: csv写入
-        :return:保存在电影数据中
+        :return: 调用后返回True，保存在电影数据中
         """
         move_url = self.movie_url + '/celebrities'
         html = session.get(
@@ -206,7 +206,7 @@ class Spider:
         """
         获取影评数据
         :param writer: csv写入
-        :return:保存在电影数据中
+        :return: 调用后返回True，保存在电影数据中
         """
         url = self.movie_url + '/comments?'
         writer.writerow([])
@@ -244,6 +244,7 @@ class Spider:
     def spider_review_by_kind(self):
         """
         设置搜索类型
+        :return: 调用后返回True
         """
         try:
             kind = int(input("请选择搜索类型：1.根据电影链接 2.根据电影id 3.根据电影名："))
@@ -282,7 +283,7 @@ def cut_word(movie_name):
     """
     定义词汇分割
     :param movie_name: 电影名称。
-    :return:返回分割后的评论列表。
+    :return: 调用后返回True，返回分割后的评论列表。
     """
     file_path = r'./Review/' + movie_name + '-电影数据.csv'
     with open(file_path, 'r', encoding='utf-8-sig') as file:
@@ -301,7 +302,7 @@ def create_word_cloud_mask(movie_name):
     """
     生成词云蒙版
     :param movie_name: 电影名称
-    :return: 返回生成的词云模板
+    :return: 调用后返回True，返回生成的词云模板
     """
     text = movie_name
     im = PIL.Image.new("RGB", (len(text) * 400 + 50, 450), (255, 255, 255))
@@ -315,7 +316,7 @@ def create_word_cloud(movie_name):
     """
     创建词云
     :param movie_name: 电影名称。
-    :return: 保存词云.png
+    :return: 调用后返回True，保存词云.png
     """
     # 设置词云形状图片,numpy+PIL方式读取图片
     wc_mask = np.array(create_word_cloud_mask(movie_name))
@@ -363,7 +364,7 @@ def create_sentiment(movie_name):
     """
      生成情感分析
     :param movie_name:
-    :return: 保存情感分析.png
+    :return: 调用后返回True，保存情感分析.png
     """
     file_path = r'./Review/' + movie_name + '-电影数据.csv'
     f = open(file_path, 'r', encoding='UTF-8')
@@ -390,7 +391,7 @@ def create_score(movie):
     """
      生成评分柱状图和饼图
     :param movie: 电影类
-    :return: 生成评分柱状图和饼图
+    :return: 调用后返回True，生成评分柱状图和饼图
     """
     # 读取文件
     score_dict = movie.score_dict
@@ -434,10 +435,9 @@ def create_score(movie):
 
 
 if __name__ == '__main__':
-    session = requests.Session()
-    spider = Spider()
     try:
-        # login()
+        session = requests.Session()
+        spider = Spider()
         spider.spider_review_by_kind()
     except Exception as e:
         if 'Unable to locate element' in str(e):
