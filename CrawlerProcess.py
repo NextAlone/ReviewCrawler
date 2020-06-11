@@ -24,7 +24,7 @@ def send_mail(title):
     # 设置email信息
     # 邮件内容设置
     msg = MIMEMultipart()
-    txt = '''<html><body><h1>{0}</h1> 
+    txt = '''<html><body><h1>{0}</h1>
     <p><img style="width=400px" src="cid:image1"></p>
     <p><img style="width=400px" src="cid:image2"></p></body>
    </html>'''.format(title)
@@ -39,7 +39,11 @@ def send_mail(title):
     # 添加邮件附件
     with open('./Review/' + title + '-词云.png', 'rb') as fp:
         img = MIMEBase('image', 'png', filename=title + '-词云.png')
-        img.add_header('Content-Disposition', 'attachment', filename=title + '-词云.png')
+        img.add_header(
+            'Content-Disposition',
+            'attachment',
+            filename=title +
+                     '-词云.png')
         img.add_header('Content-ID', '<image1>')
         img.add_header('X-Attachment-Id', '0')
         img.set_payload(fp.read())
@@ -47,7 +51,11 @@ def send_mail(title):
         msg.attach(img)
     with open('./Review/' + title + '-情感分析.png', 'rb') as fp:
         img = MIMEBase('image', 'png', filename=title + '-情感分析.png')
-        img.add_header('Content-Disposition', 'attachment', filename=title + '-情感分析.png')
+        img.add_header(
+            'Content-Disposition',
+            'attachment',
+            filename=title +
+                     '-情感分析.png')
         img.add_header('Content-ID', '<image2>')
         img.add_header('X-Attachment-Id', '1')
         img.set_payload(fp.read())
