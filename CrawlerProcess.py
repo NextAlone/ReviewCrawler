@@ -156,8 +156,14 @@ def send(title, path, file_name_suffix):
         # 实例化EmailSender
         email_sender = EmailSender(mail_host)
         email_sender.login(mail_from, mail_pass)
-        email_sender.send_email(subject, mail_to, mail_cc, content, 'html', attach)
-    except Exception as  e:
+        email_sender.send_email(
+            subject,
+            mail_to,
+            mail_cc,
+            content,
+            'html',
+            attach)
+    except Exception as e:
         print('邮件发送出现未知错误。错误信息：', e)
     else:
         print('邮件发送成功。')
