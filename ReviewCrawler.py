@@ -78,10 +78,11 @@ class Spider:
         path = os.getcwd()
         self.movie_url = review_url[:42]
         fn = path + './Review/url-电影数据.csv'
-        with open(fn, 'w', encoding='utf_8_sig') as fp:
+        with open(fn, 'w', encoding='utf_8_sig', newline='') as fp:
             wr = csv.writer(fp)
             self.get_crew(wr)
             self.get_score(wr)
+            wr.writerow([])
             wr.writerow(['影评'])
             while True:
                 comment_url = self.movie_url + 'comments'
@@ -126,10 +127,11 @@ class Spider:
         path = os.getcwd()
         self.movie_url = 'https://movie.douban.com/subject/' + review_id
         fn = path + './Review/' + review_id + '-电影数据.csv'
-        with open(fn, 'w', encoding='utf_8_sig') as fp:
+        with open(fn, 'w', encoding='utf_8_sig', newline='') as fp:
             wr = csv.writer(fp)
             self.get_crew(wr)
             self.get_score(wr)
+            wr.writerow([])
             wr.writerow(['影评'])
             while True:
                 move_url = self.movie_url + '/comments?'
@@ -199,10 +201,11 @@ class Spider:
         page = 0
         path = os.getcwd()
         fn = path + './Review/' + review_name + '-电影数据.csv'
-        with open(fn, 'w', encoding='utf_8_sig') as fp:
+        with open(fn, 'w', encoding='utf_8_sig', newline='') as fp:
             wr = csv.writer(fp)
             self.get_crew(wr)
             self.get_score(wr)
+            wr.writerow([])
             wr.writerow(['影评'])
             move_url = self.movie_url + '/comments?'
             while True:
@@ -255,6 +258,7 @@ class Spider:
         print(total_score)
         self.total_score = total_score
         score_dict = {}
+        writer.writerow([])
         writer.writerow(['豆瓣评分'])
         for index in range(5, 0, -1):
             score = str(xpath_tree.xpath(
@@ -281,7 +285,8 @@ class Spider:
         xpath_tree = etree.HTML(html.text)
         name = str(xpath_tree.xpath('//div[contains(@id,"content")]/h1/text()')[0]).split(' ')[0]
         self.movie_name = name
-        writer.writerow(['电影' + name + '豆瓣数据'])
+        writer.writerow(['电影' + name + '--豆瓣数据'])
+        writer.writerow([])
         writer.writerow(['演职员表'])
         for i in range(1, 4):
             label = \
