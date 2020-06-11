@@ -179,7 +179,8 @@ class Spider:
         )
         print(html.url)
         xpath_tree = etree.HTML(html.text)
-        total_score = xpath_tree.xpath('//div[contains(@class,"rating_self")]/strong/text()')[0]
+        total_score = xpath_tree.xpath(
+            '//div[contains(@class,"rating_self")]/strong/text()')[0]
         print(total_score)
         self.total_score = total_score
         score_dict = {}
@@ -433,7 +434,15 @@ def create_score(movie):
     plt.ylabel("用户占比", font)
     plt.title("豆瓣评分（" + total_score + '分）', font)
     for a, b in zip(score_dict.keys(), score_dict.values()):
-        plt.text(a, b + 0.005, '%.3f' % b, ha='center', va='bottom', fontsize=10)
+        plt.text(
+            a,
+            b +
+            0.005,
+            '%.3f' %
+            b,
+            ha='center',
+            va='bottom',
+            fontsize=10)
 
     img = r'./Review/' + movie_name + '-评分柱状图.png'
     fig = plt.gcf()
@@ -457,7 +466,12 @@ if __name__ == '__main__':
             create_score(spider)
             create_word_cloud(spider.movie_name)
             create_sentiment(spider.movie_name)
-            file_name_suffix = ['-评分饼图.png', '-评分柱状图.png', '-词云.png', '-情感分析.png', '-评论数据.csv']
+            file_name_suffix = [
+                '-评分饼图.png',
+                '-评分柱状图.png',
+                '-词云.png',
+                '-情感分析.png',
+                '-评论数据.csv']
             send(spider.movie_name, './Review', file_name_suffix)
         except Exception as e:
             print('创建词云与情感分析出错。', e)
