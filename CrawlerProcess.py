@@ -51,8 +51,6 @@ class EmailSender(object):
             file = os.path.join(filepath, filename)
             attach = MIMEBase("application", "octet-stream")
             attach.set_payload(open(file, "rb").read())
-            # attach.add_header("Content-Disposition",
-            # "attachment;filename=%s"%(basename))
             attach.add_header(
                 "Content-Disposition",
                 "attachment",

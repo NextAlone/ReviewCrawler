@@ -36,8 +36,10 @@ headers = {
 }
 
 
-# 定义登录
 def login():
+    """
+    定义登录
+    """
     url = "https://accounts.douban.com/j/mobile/login/basic"
     data = {
         'name': '18501910988',
@@ -45,7 +47,7 @@ def login():
         'remember': 'false',
     }
     cookies = {
-        'cookie': 'bid=iBxpSJYJUHM; __gads=ID=df4e600ad2ea16b3:T=1588037075:S=ALNI_MbdX7EPlcOyNNLXl3KlEAwzDW1hsQ; __utma=30149280.476129765.1588037078.1588037078.1588037078.1; __utmc=30149280; __utmz=30149280.1588037078.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); gr_user_id=7ffae438-179f-4c1e-8f40-830c44acb32c; _vwo_uuid_v2=DE151CB8C2F41E16D472D516641BEC938|e7a486aab194314932b78465aead15b2; viewed="26329916_2304817"; __yadk_uid=S0unLCOmj4lfHiznba5rU3JGimsx51qC; ll="118226"; push_noty_num=0; push_doumail_num=0; douban-profile-remind=1; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1591675008%2C%22https%3A%2F%2Fsearch.douban.com%2Fmovie%2Fsubject_search%3Fsearch_text%3D%25E6%25B5%2581%25E6%25B5%25AA%25E5%259C%25B0%25E7%2590%2583%22%5D; _pk_ses.100001.4cf6=*; dbcl2="197952164:C60grevUaZQ"; ck=ZjZN; _pk_id.100001.4cf6=3bd271c5fbad1e33.1591625554.7.1591675017.1591673070.; ap_v=0,6.0'}
+        'cookie': r'bid=iBxpSJYJUHM; __gads=ID=df4e600ad2ea16b3:T=1588037075:S=ALNI_MbdX7EPlcOyNNLXl3KlEAwzDW1hsQ; __utma=30149280.476129765.1588037078.1588037078.1588037078.1; __utmc=30149280; __utmz=30149280.1588037078.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); gr_user_id=7ffae438-179f-4c1e-8f40-830c44acb32c; _vwo_uuid_v2=DE151CB8C2F41E16D472D516641BEC938|e7a486aab194314932b78465aead15b2; viewed="26329916_2304817"; __yadk_uid=S0unLCOmj4lfHiznba5rU3JGimsx51qC; ll="118226"; push_noty_num=0; push_doumail_num=0; douban-profile-remind=1; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1591675008%2C%22https%3A%2F%2Fsearch.douban.com%2Fmovie%2Fsubject_search%3Fsearch_text%3D%25E6%25B5%2581%25E6%25B5%25AA%25E5%259C%25B0%25E7%2590%2583%22%5D; _pk_ses.100001.4cf6=*; dbcl2="197952164:C60grevUaZQ"; ck=ZjZN; _pk_id.100001.4cf6=3bd271c5fbad1e33.1591625554.7.1591675017.1591673070.; ap_v=0,6.0'}
     # 设置代理，从西刺免费代理网站上找出一个可用的代理IP
     user = session.post(url=url, headers=headers, data=data)
     # user = session.post(url=url, headers=headers, cookies=cookies)
