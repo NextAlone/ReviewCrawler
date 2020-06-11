@@ -16,7 +16,7 @@ def _format_addr(s):
 mail_host = 'smtp.163.com'
 mail_from = 'nextducts@163.com'
 mail_pass = 'EXBBVWLNKOQGIASN'
-mail_to = ['nextducts@163.com', 'love5212138@gmail.com', '1378099423@qq.com']
+mail_to = ['nextducts@163.com', '2463811949@qq.com', '1378099423@qq.com']
 
 
 def send_mail(title):
@@ -24,10 +24,10 @@ def send_mail(title):
     # 设置email信息
     # 邮件内容设置
     msg = MIMEMultipart()
-    txt = '''<html><body><h1>{0}</h1>
-    <p><img style="width=400px" src="cid:image1"></p>
-    <p><img style="width=400px" src="cid:image2"></p></body>
-   </html>'''.format(title)
+    txt = '''<html>
+    <body><h1>{0}</h1>
+    <p><img style="width:400px" src="cid:image1"></p>
+    <p><img style="width:400px" src="cid:image2"></p></body></html>'''.format(title)
     msg.attach(MIMEText(txt, 'html', 'utf-8'))
     # msg = MIMEText('<html><h1>{0}</h1></html>', 'html', 'utf-8')
     # 邮件主题
@@ -42,8 +42,7 @@ def send_mail(title):
         img.add_header(
             'Content-Disposition',
             'attachment',
-            filename=title +
-                     '-词云.png')
+            filename=title + '-词云.png')
         img.add_header('Content-ID', '<image1>')
         img.add_header('X-Attachment-Id', '0')
         img.set_payload(fp.read())
@@ -54,8 +53,7 @@ def send_mail(title):
         img.add_header(
             'Content-Disposition',
             'attachment',
-            filename=title +
-                     '-情感分析.png')
+            filename=title + '-情感分析.png')
         img.add_header('Content-ID', '<image2>')
         img.add_header('X-Attachment-Id', '1')
         img.set_payload(fp.read())
