@@ -136,7 +136,7 @@ def send(title, path, file_name_suffix):
     mail_from = 'nextducts'
     mail_pass = 'EXBBVWLNKOQGIASN'
     mail_to = ['nextducts@163.com', '2463811949@qq.com', '1378099423@qq.com']
-    mail_cc = []
+    mail_cc = ['1310252406@qq.com']
     subject = "豆瓣影评抓取--" + title
     content = ['<html><body><h1>{0}</h1>'.format(subject), '</body></html>']
     attach_file_path = path
