@@ -64,7 +64,8 @@ class Spider:
 
     def spider_url(self, review_url):
         """
-        根据URL查找
+        根据URL查找。
+        :param review_url:电影豆瓣URL
         """
         page = 0
         path = os.getcwd()
@@ -112,6 +113,7 @@ class Spider:
     def spider_id(self, review_id):
         """
         根据id查找
+        :param:电影豆瓣ID
         """
         page = 0
         path = os.getcwd()
@@ -161,6 +163,7 @@ class Spider:
     def spider_name(self, review_name):
         """
         根据名称查找
+        :param 电影名称（模糊）。
         """
         params = urlencode({'search_text': review_name})
         move_url = 'https://movie.douban.com/subject_search'
@@ -266,8 +269,12 @@ class Spider:
             self.spider_kind()
 
 
-# 定义词汇分割
 def cut_word(movie_name):
+    """
+    定义词汇分割
+    :param movie_name: 电影名称。
+    :return:返回分割后的评论列表。
+    """
     file_path = r'./Review/' + movie_name + '-data.csv'
     with open(file_path, 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
@@ -283,6 +290,11 @@ def cut_word(movie_name):
 
 # 生成词云蒙版
 def create_word_cloud_mask(movie_name):
+    """
+    生成词云蒙版
+    :param movie_name: 电影名称
+    :return: 返回生成的词云模板
+    """
     text = movie_name
     im = PIL.Image.new("RGB", (len(text) * 400 + 50, 450), (255, 255, 255))
     dr = PIL.ImageDraw.Draw(im)
@@ -291,8 +303,11 @@ def create_word_cloud_mask(movie_name):
     return im
 
 
-# 创建词云
 def create_word_cloud(movie_name):
+    """
+    创建词云
+    :param movie_name: 电影名称。
+    """
     # 设置词云形状图片,numpy+PIL方式读取图片
     wc_mask = np.array(create_word_cloud_mask(movie_name))
     # 数据清洗词列表
@@ -334,8 +349,11 @@ def create_word_cloud(movie_name):
     print('文件已保存：', img)
 
 
-# 生成情感分析
 def sentiment_show(movie_name):
+    """
+     生成情感分析
+    :param movie_name:
+    """
     file_path = r'./Review/' + movie_name + '-data.csv'
     f = open(file_path, 'r', encoding='UTF-8')
     review_list = f.readlines()

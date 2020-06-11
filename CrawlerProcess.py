@@ -65,7 +65,15 @@ class EmailSender(object):
         except Exception as e:
             print('添加附件失败。错误信息：', filename, str(e))
 
-    def send_email(self, subject, to_addrs, cc_addrs, content, subtype="plain", attachment=None, charset=None):
+    def send_email(
+            self,
+            subject,
+            to_addrs,
+            cc_addrs,
+            content,
+            subtype="plain",
+            attachment=None,
+            charset=None):
         """
         发送邮件。
         :param subject:    邮件主题。
@@ -140,71 +148,3 @@ def send(title, path, file_name_suffix):
     email_sender = EmailSender(mail_host)
     email_sender.login(mail_from, mail_pass)
     email_sender.send_email(subject, mail_to, mail_cc, content, 'html', attach)
-
-# def send_mail(title):
-#     # 构造一个MIMEMultipart对象代表邮件本身
-#     # 设置email信息
-#     # 邮件内容设置
-#     msg = MIMEMultipart()
-#     txt = '''<html>
-#     <body><h1>{0}</h1>
-#     <p><img style="width:600px" src="cid:image1"></p>
-#     <p><img style="width:600px" src="cid:image2"></p></body></html>'''.format(title)
-#     msg.attach(MIMEText(txt, 'html', 'utf-8'))
-#     # msg = MIMEText('<html><h1>{0}</h1></html>', 'html', 'utf-8')
-#     # 邮件主题
-#     msg['Subject'] = 'Python--' + title
-#     # 发送方信息
-#     msg['From'] = _format_addr(u'NextAlone <%s>' % mail_from)
-#     # 接受方信息
-#     msg['To'] = ','.join(mail_to)
-#     # 添加邮件附件
-#     with open('./Review/' + title + '-词云.png', 'rb') as fp:
-#         img = MIMEBase('image', 'png', filename=title + '-词云.png')
-#         img.add_header(
-#             'Content-Disposition',
-#             'attachment',
-#             filename=title + '-词云.png')
-#         img.add_header('Content-ID', '<image1>')
-#         img.add_header('X-Attachment-Id', '0')
-#         img.set_payload(fp.read())
-#         encoders.encode_base64(img)
-#         msg.attach(img)
-#     with open('./Review/' + title + '-情感分析.png', 'rb') as fp:
-#         # img = MIMEBase('image', 'png', filename=title + '-情感分析.png')
-#         # img.add_header(
-#         #     'Content-Disposition',
-#         #     'attachment',
-#         #     filename=title + '-情感分析.png')
-#         # img.add_header('Content-ID', '<image2>')
-#         # img.add_header('X-Attachment-Id', '1')
-#         # img.set_payload(fp.read())
-#         # encoders.encode_base64(img)
-#         # msg.attach(img)
-#         pic_att = MIMEImage(fp.read(), _subtype='png')
-#         pic_att.add_header('Content-Type', 'application/octet-stream')
-#         pic_att.add_header(
-#             'Content-Disposition',
-#             'attachment',
-#             filename=title +
-#                      '-情感分析.png')
-#         msg.attach(pic_att)
-#     # 登录并发送邮件
-#     try:
-#         smpt = smtplib.SMTP()
-#         # 连接到服务器
-#         smpt.connect(mail_host, 25)
-#         # 登录到服务器
-#         smpt.login(mail_from, mail_pass)
-#         # 发送
-#         smpt.sendmail(mail_from, mail_to, msg.as_string())
-#         # 退出
-#         smpt.quit()
-#         print('发送成功。')
-#     except smtplib.SMTPException as e:
-#         print('发送失败：', e)  # 打印错误
-#     except Exception as e:
-#         print('发送失败：', e)  # 打印错误
-#
-#
-# send_mail('英雄儿女')
