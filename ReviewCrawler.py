@@ -104,7 +104,8 @@ class Spider:
         )
         # 利用selenium模拟浏览器，找到电影的url
         chrome_options = Options()
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        chrome_options.add_experimental_option(
+            'excludeSwitches', ['enable-automation'])
         chrome_options.add_argument('--headless')
         chrome_options.add_argument(
             'User-Agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15"')
