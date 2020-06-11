@@ -98,8 +98,7 @@ class Spider:
                     headers=headers,
                     proxies=proxies)
                 page += 1
-                print(
-                    "开始爬取第{0}页***********************************************************************：".format(page))
+                print("开始爬取第{0}页'+'*'*20+'：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
@@ -149,8 +148,7 @@ class Spider:
                 )
                 print(html.url)
                 page += 1
-                print(
-                    "开始爬取第{0}页***********************************************************************：".format(page))
+                print("开始爬取第{0}页'+'*'*20+'：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
@@ -221,8 +219,7 @@ class Spider:
                     headers=headers,
                     timeout=3)
                 page += 1
-                print(
-                    "开始爬取第{0}页***********************************************************************：".format(page))
+                print("开始爬取第{0}页'+'*'*20+'：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
@@ -283,22 +280,29 @@ class Spider:
         )
         print(html.url)
         xpath_tree = etree.HTML(html.text)
-        name = str(xpath_tree.xpath('//div[contains(@id,"content")]/h1/text()')[0]).split(' ')[0]
+        name = str(xpath_tree.xpath(
+            '//div[contains(@id,"content")]/h1/text()')[0]).split(' ')[0]
         self.movie_name = name
         writer.writerow(['电影' + name + '--豆瓣数据'])
         writer.writerow([])
         writer.writerow(['演职员表'])
         for i in range(1, 4):
-            label = \
-                str(xpath_tree.xpath('//div[contains(@class,"celebrities")]/div[{0}]/h2/text()'.format(i))[0]).split(
-                    ' ')[0]
-            label = label.replace('\'', '').replace('[', '').replace(']', '').split(',')
+            label = str(
+                xpath_tree.xpath(
+                    '//div[contains(@class,"celebrities")]/div[{0}]/h2/text()'.format(i))[0]).split(' ')[0]
+            label = label.replace(
+                '\'', '').replace(
+                '[', '').replace(
+                ']', '').split(',')
             print(label)
             writer.writerow(label)
             celebrity = str(
                 xpath_tree.xpath(
                     '//div[contains(@class,"celebrities")]/div[{0}]/ul/li//div/span[1]/a/text()'.format(i)))
-            celebrity = celebrity.replace('\'', '').replace('[', '').replace(']', '').split(',')
+            celebrity = celebrity.replace(
+                '\'', '').replace(
+                '[', '').replace(
+                ']', '').split(',')
             print(celebrity)
             writer.writerow(celebrity)
         return
