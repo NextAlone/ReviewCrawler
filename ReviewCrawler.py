@@ -23,14 +23,13 @@ from CrawlerProcess import send
 
 WC_FONT_PATH = r'C:\Windows\Fonts\simhei.ttf'
 
-session = requests.Session()
-# 设置代理
+# 设置代理，反爬虫，未代理也可使用，故未代理
 proxies = {
     "http": "http://120.24.231.203:8080",
     # "http": "http://223.167.7.112:8060",
     "https": "http://223.243.4.51:4216",
 }
-# 设置头部
+# 设置模拟浏览器头部
 headers = {
     "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4164.4 Safari/537.36',
 }
@@ -38,7 +37,7 @@ headers = {
 
 def login():
     """
-    定义登录
+    定义豆瓣登录，未登录也可使用，故未调用
     """
     url = "https://accounts.douban.com/j/mobile/login/basic"
     data = {
@@ -60,24 +59,30 @@ class Spider:
     """
 
     def __init__(self):
+        """
+        初始化爬虫
+        """
         self.movie_url = None
         self.movie_id = None
         self.movie_name = None
         self.score_dict = None
         self.total_score = None
 
-    def spider_url(self, review_url):
+    def spider_review_by_url(self, review_url):
         """
         根据URL查找。
         :param review_url:电影豆瓣URL
+        :return 输出为电影数据文件
         """
         page = 0
         path = os.getcwd()
         self.movie_url = review_url[:42]
-        fn = path + './Review/url-评论数据.csv'
+        fn = path + './Review/url-电影数据.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
-            wr.writerow(['Review'])
+            self.get_crew(wr)
+            self.get_score(wr)
+            wr.writerow(['影评'])
             while True:
                 comment_url = self.movie_url + 'comments'
                 params = {
@@ -96,10 +101,6 @@ class Spider:
                     "开始爬取第{0}页***********************************************************************：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
-                if page == 0:
-                    self.movie_name = str(xpath_tree.xpath(
-                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip(' ').replace('短评', '').replace(' ',
-                                                                                                                  '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -112,21 +113,24 @@ class Spider:
                 else:
                     print("大约共{0}页评论".format(page - 1))
                     break
-        new_filename = path + './Review/' + self.movie_name + '-评论数据.csv'
+        new_filename = path + './Review/' + self.movie_name + '-电影数据.csv'
         shutil.move(fn, new_filename)
 
-    def spider_id(self, review_id):
+    def spider_review_by_id(self, review_id):
         """
         根据id查找
         :param:电影豆瓣ID
+        :return 输出为电影数据文件
         """
         page = 0
         path = os.getcwd()
         self.movie_url = 'https://movie.douban.com/subject/' + review_id
-        fn = path + './Review/' + review_id + '-评论数据.csv'
+        fn = path + './Review/' + review_id + '-电影数据.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
-            wr.writerow(['Review'])
+            self.get_crew(wr)
+            self.get_score(wr)
+            wr.writerow(['影评'])
             while True:
                 move_url = self.movie_url + '/comments?'
                 params = {
@@ -147,10 +151,6 @@ class Spider:
                     "开始爬取第{0}页***********************************************************************：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
-                if page == 1:
-                    self.movie_name = str(xpath_tree.xpath(
-                        '//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).strip(' ').replace('短评', '').replace(' ',
-                                                                                                                  '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -163,41 +163,14 @@ class Spider:
                 else:
                     print("大约共{0}页评论".format(page - 1))
                     break
-        new_filename = path + './Review/' + self.movie_name + '-评论数据.csv'
+        new_filename = path + './Review/' + self.movie_name + '-电影数据.csv'
         shutil.move(fn, new_filename)
 
-    def get_score(self):
-        """
-        根据id获取评分
-        :param:电影豆瓣ID
-        """
-
-        move_url = self.movie_url
-        html = session.get(
-            url=move_url,
-            headers=headers,
-        )
-        print(html.url)
-        xpath_tree = etree.HTML(html.text)
-        total_score = xpath_tree.xpath(
-            '//div[contains(@class,"rating_self")]/strong/text()')[0]
-        print(total_score)
-        self.total_score = total_score
-        score_dict = {}
-        for index in range(5, 0, -1):
-            score = str(xpath_tree.xpath(
-                '//div[contains(@class,"ratings-on-weight")]/div[{0}]/span[2]/text()'.format(index))[
-                            0]).strip().replace('%', '')
-            print(score)
-
-            score_dict.update({6 - index: round(float(score) * 0.01, 3)})
-        self.score_dict = score_dict
-        print('已获取电影评分。')
-
-    def spider_name(self, review_name):
+    def spider_review_by_name(self, review_name):
         """
         根据名称查找
         :param 电影名称（模糊）。
+        :return 输出为电影数据文件
         """
         params = urlencode({'search_text': review_name})
         move_url = 'https://movie.douban.com/subject_search'
@@ -225,10 +198,12 @@ class Spider:
         # 抓取评论写入文件
         page = 0
         path = os.getcwd()
-        fn = path + './Review/' + review_name + '-评论数据.csv'
+        fn = path + './Review/' + review_name + '-电影数据.csv'
         with open(fn, 'w', encoding='utf_8_sig') as fp:
             wr = csv.writer(fp)
-            wr.writerow(['Review'])
+            self.get_crew(wr)
+            self.get_score(wr)
+            wr.writerow(['影评'])
             move_url = self.movie_url + '/comments?'
             while True:
                 params = {
@@ -247,11 +222,6 @@ class Spider:
                     "开始爬取第{0}页***********************************************************************：".format(page))
                 print(html.url)
                 xpath_tree = etree.HTML(html.text)
-                if page == 1:
-                    self.movie_name = str(
-                        xpath_tree.xpath('//*[@id="wrapper"]/div[@id="content"]/h1')[0].text).replace(
-                        '短评', '').strip(' ').replace(
-                        ' ', '-')
                 comment_divs = xpath_tree.xpath('//*[@id="comments"]/div')
                 if len(comment_divs) > 2:
                     # 获取每一条评论的具体内容
@@ -264,10 +234,71 @@ class Spider:
                 else:
                     print("大约共{0}页评论".format(page - 1))
                     break
-        new_filename = path + './Review/' + self.movie_name + '-评论数据.csv'
+        new_filename = path + './Review/' + self.movie_name + '-电影数据.csv'
         shutil.move(fn, new_filename)
 
-    def spider_kind(self):
+    def get_score(self, writer):
+        """
+        获取评分
+        :param:writer:
+        :return:
+        """
+        move_url = self.movie_url
+        html = session.get(
+            url=move_url,
+            headers=headers,
+        )
+        print(html.url)
+        xpath_tree = etree.HTML(html.text)
+        total_score = xpath_tree.xpath(
+            '//div[contains(@class,"rating_self")]/strong/text()')[0]
+        print(total_score)
+        self.total_score = total_score
+        score_dict = {}
+        writer.writerow(['豆瓣评分'])
+        for index in range(5, 0, -1):
+            score = str(xpath_tree.xpath(
+                '//div[contains(@class,"ratings-on-weight")]/div[{0}]/span[2]/text()'.format(index))[
+                            0]).strip().replace('%', '')
+            print(score)
+            score_dict.update({6 - index: round(float(score) * 0.01, 3)})
+            writer.writerow([6 - index, round(float(score) * 0.01, 3)])
+        self.score_dict = score_dict
+        print('已获取电影评分。')
+
+    def get_crew(self, writer):
+        """
+        获取演职员数据数据
+        :param writer:
+        :return:保存在电影数据中
+        """
+        move_url = self.movie_url + '/celebrities'
+        html = session.get(
+            url=move_url,
+            headers=headers,
+        )
+        print(html.url)
+        xpath_tree = etree.HTML(html.text)
+        name = str(xpath_tree.xpath('//div[contains(@id,"content")]/h1/text()')[0]).split(' ')[0]
+        self.movie_name = name
+        writer.writerow(['电影' + name + '豆瓣数据'])
+        writer.writerow(['演职员表'])
+        for i in range(1, 4):
+            label = \
+                str(xpath_tree.xpath('//div[contains(@class,"celebrities")]/div[{0}]/h2/text()'.format(i))[0]).split(
+                    ' ')[0]
+            label = label.replace('\'', '').replace('[', '').replace(']', '').split(',')
+            print(label)
+            writer.writerow(label)
+            celebrity = str(
+                xpath_tree.xpath(
+                    '//div[contains(@class,"celebrities")]/div[{0}]/ul/li//div/span[1]/a/text()'.format(i)))
+            celebrity = celebrity.replace('\'', '').replace('[', '').replace(']', '').split(',')
+            print(celebrity)
+            writer.writerow(celebrity)
+        return
+
+    def spider_review_by_kind(self):
         """
         设置搜索类型
         """
@@ -277,21 +308,21 @@ class Spider:
                 self.movie_url = input("请输入电影链接:")
                 if self.movie_url is None:
                     raise RuntimeError('电影链接为空')
-                self.spider_url(self.movie_url)
+                self.spider_review_by_url(self.movie_url)
             elif kind == 2:
                 self.movie_id = input("请输入电影id:")
                 if self.movie_id is None:
                     raise RuntimeError('电影id为空')
-                self.spider_id(self.movie_id)
+                self.spider_review_by_id(self.movie_id)
             elif kind == 3:
                 self.movie_name = input("请输入电影名:")
                 if self.movie_name is None:
                     raise RuntimeError('电影名为空')
-                self.spider_name(self.movie_name)
+                self.spider_review_by_name(self.movie_name)
             else:
                 print("搜索类型输入错误！")
                 print('*' * 50)
-                self.spider_kind()
+                self.spider_review_by_kind()
         except Exception as exception:
             if 'Unable to locate element' in str(exception):
                 print('IP封禁或无此对象：', exception)
@@ -300,9 +331,7 @@ class Spider:
             else:
                 print("信息输入不全或错误：", exception)
             print('*' * 50)
-            self.spider_kind()
-        else:
-            self.get_score()
+            self.spider_review_by_kind()
 
 
 def cut_word(movie_name):
@@ -311,7 +340,7 @@ def cut_word(movie_name):
     :param movie_name: 电影名称。
     :return:返回分割后的评论列表。
     """
-    file_path = r'./Review/' + movie_name + '-评论数据.csv'
+    file_path = r'./Review/' + movie_name + '-电影数据.csv'
     with open(file_path, 'r', encoding='utf-8-sig') as file:
         # 读取文件里面的全部内容
         comment_txt = file.read()
@@ -342,6 +371,7 @@ def create_word_cloud(movie_name):
     """
     创建词云
     :param movie_name: 电影名称。
+    :return: 保存词云.png
     """
     # 设置词云形状图片,numpy+PIL方式读取图片
     wc_mask = np.array(create_word_cloud_mask(movie_name))
@@ -388,8 +418,9 @@ def create_sentiment(movie_name):
     """
      生成情感分析
     :param movie_name:
+    :return: 保存情感分析.png
     """
-    file_path = r'./Review/' + movie_name + '-评论数据.csv'
+    file_path = r'./Review/' + movie_name + '-电影数据.csv'
     f = open(file_path, 'r', encoding='UTF-8')
     review_list = f.readlines()
     sentiments_list = []
@@ -410,6 +441,11 @@ def create_sentiment(movie_name):
 
 
 def create_score(movie):
+    """
+     生成评分柱状图和饼图
+    :param movie: 电影类
+    :return: 生成评分柱状图和饼图
+    """
     # 读取文件
     score_dict = movie.score_dict
     total_score = movie.total_score
@@ -452,10 +488,11 @@ def create_score(movie):
 
 
 if __name__ == '__main__':
+    session = requests.Session()
     spider = Spider()
     try:
         # login()
-        spider.spider_kind()
+        spider.spider_review_by_kind()
     except Exception as e:
         if 'Unable to locate element' in str(e):
             print('IP封禁或无此对象：', e)
@@ -471,7 +508,7 @@ if __name__ == '__main__':
                 '-评分柱状图.png',
                 '-词云.png',
                 '-情感分析.png',
-                '-评论数据.csv']
+                '-电影数据.csv']
             send(spider.movie_name, './Review', file_name_suffix)
         except Exception as e:
             print('创建词云与情感分析出错。', e)
