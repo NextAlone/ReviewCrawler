@@ -143,10 +143,10 @@ def send(title, path, file_name_suffix):
     :param file_name_suffix:  文件后缀列表
     """
     mail_host = 'smtp.163.com'
-    mail_from = 'nextducts'
-    mail_pass = 'EXBBVWLNKOQGIASN'
-    mail_to = ['nextducts@163.com', '2463811949@qq.com', '1378099423@qq.com']
-    mail_cc = ['1310252406@qq.com', 'love5212138@gmail.com']
+    mail_from = ''
+    mail_pass = ''
+    mail_to = ['xxx']
+    mail_cc = ['xxx']
     subject = "豆瓣电影抓取--" + title
     content = ['<html><body><h1>{0}</h1>'.format(subject), '</body></html>']
     attach_file_path = path
